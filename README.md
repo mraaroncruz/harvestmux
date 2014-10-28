@@ -22,4 +22,7 @@ the `-config` part is the absolute path to your `config.yml` file. Just make a c
 
 [go-yaml license](https://github.com/go-yaml/yaml/blob/v2/LICENSE)
 
+[So you don't have to scroll up](https://github.com/pferdefleisch/harvestmux/blob/master/LICENSE)
+
+
 __Enjoy__
