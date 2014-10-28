@@ -1,8 +1,14 @@
 ## Harvestmux - harvestapp plugin for tmux
 
-I just hacked this out. It is not `go get`able yet. It's pretty raw
+I just hacked this out. It's pretty raw
 
 If anyone is interested in binaries or better instructions, contact me via twitter [@mraaroncruz](http://twitter.com/mraaroncruz)
+
+### Installation
+Install golang and set up your `GOPATH`
+
+Then run  
+`go get github.com/pferdefleisch/harvestmux`
 
 ### Screenshot
 
