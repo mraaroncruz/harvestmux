@@ -11,31 +11,32 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Response struct {
-	DayEntries []Entry `json:"day_entries"`
+type response struct {
+	DayEntries []entry `json:"day_entries"`
 }
 
-type Entry struct {
+type entry struct {
 	Hours float64
 }
 
-type Config struct {
+type config struct {
 	Email     string
 	Password  string
 	Subdomain string
 }
 
 var configPath = flag.String("config", "./config.yml", "path to config file")
+var currentOnly = flag.Bool("o", false, "only show current time")
 
-const harvestUrl = "harvestapp.com/daily"
+const harvestURL = "harvestapp.com/daily"
 
-func createRequest(config *Config) *http.Request {
-	url := fmt.Sprintf("https://%s.%s", config.Subdomain, harvestUrl)
+func createRequest(c *config) *http.Request {
+	url := fmt.Sprintf("https://%s.%s", c.Subdomain, harvestURL)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		panic(err)
 	}
-	req.SetBasicAuth(config.Email, config.Password)
+	req.SetBasicAuth(c.Email, c.Password)
 	req.Header.Add("Content-Type", "application/json")
 	req.Header.Add("Accept", "application/json")
 	return req
@@ -54,7 +55,7 @@ func main() {
 		panic(err)
 	}
 
-	c := Config{}
+	c := config{}
 	err = yaml.Unmarshal(configBytes, &c)
 	if err != nil {
 		panic(err)
@@ -72,12 +73,20 @@ func main() {
 		panic(err)
 	}
 
-	data := Response{}
+	data := response{}
 	err = json.Unmarshal(body, &data)
 	if err != nil {
 		panic(err)
 	}
 
-	entry := data.DayEntries[0]
-	fmt.Printf("%1.2f", entry.Hours)
+	var sum float64
+	if *currentOnly {
+		entry := data.DayEntries[len(data.DayEntries)-1]
+		sum = entry.Hours
+	} else {
+		for _, entry := range data.DayEntries {
+			sum += entry.Hours
+		}
+	}
+	fmt.Printf("%1.2f", sum)
 }
