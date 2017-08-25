@@ -7,16 +7,30 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"time"
 
 	"gopkg.in/yaml.v2"
 )
 
 type response struct {
-	DayEntries []entry `json:"day_entries"`
+	DayEntries []Entry `json:"day_entries"`
 }
 
-type entry struct {
-	Hours float64
+type Entry struct {
+	Client            string      `json:"client"`
+	CreatedAt         time.Time   `json:"created_at"`
+	Hours             float64     `json:"hours"`
+	HoursWithoutTimer float64     `json:"hours_without_timer"`
+	ID                int         `json:"id"`
+	Notes             interface{} `json:"notes"`
+	Project           string      `json:"project"`
+	ProjectID         string      `json:"project_id"`
+	SpentAt           string      `json:"spent_at"`
+	Task              string      `json:"task"`
+	TimerStartedAt    *time.Time  `json:"timer_started_at"`
+	TaskID            string      `json:"task_id"`
+	UpdatedAt         time.Time   `json:"updated_at"`
+	UserID            int         `json:"user_id"`
 }
 
 type config struct {
@@ -28,7 +42,7 @@ type config struct {
 var configPath = flag.String("config", "./config.yml", "path to config file")
 var currentOnly = flag.Bool("o", false, "only show current time")
 
-const harvestURL = "harvestapp.com/daily"
+const harvestURL = "harvestapp.com/daily?slim=1"
 
 func createRequest(c *config) *http.Request {
 	url := fmt.Sprintf("https://%s.%s", c.Subdomain, harvestURL)
@@ -80,13 +94,15 @@ func main() {
 	}
 
 	var sum float64
-	if *currentOnly {
-		entry := data.DayEntries[len(data.DayEntries)-1]
-		sum = entry.Hours
-	} else {
-		for _, entry := range data.DayEntries {
-			sum += entry.Hours
+	for _, e := range data.DayEntries {
+		sum += e.Hours
+	}
+
+	for _, e := range data.DayEntries {
+		if e.TimerStartedAt != nil {
+			fmt.Printf("%s — %1.2f - %1.2f", e.Client, e.Hours, sum)
+			return
 		}
 	}
-	fmt.Printf("%1.2f", sum)
+	fmt.Printf("No Timer Running!")
 }
